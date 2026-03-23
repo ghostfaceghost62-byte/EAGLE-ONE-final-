@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAGLE ONE | Motor Center</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    
+</head>
+<body>
+
+<script>
+    const _adminUser = JSON.parse(localStorage.getItem('eagle_active_user') || 'null');
+    if (!_adminUser || _adminUser.role !== 'admin') window.location.replace('index.html');
+</script>
+
+<div class="admin-layout">
+
+    <aside class="sidebar">
+        <div class="sidebar-header" style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-size: 1.5rem; font-weight: 800; letter-spacing: 1px;">
+                <i class="fa-solid fa-shield-halved"></i> EAGLE <span class="accent-text">CMD</span>
+            </div>
+            <div class="sidebar-version tech-font" style="font-size: 0.65rem;">SYS_V2.0 // ONLINE <span class="status-dot" style="margin-left:auto;"></span></div>
+        </div>
+
+        <nav class="nav-links">
+            <div class="nav-category tech-font">SYS.MODULE // INVENTORY</div>
+            <a onclick="switchAdminTab(event,'products')" class="active"><i class="fa-solid fa-box-open"></i> Products</a>
+            <a onclick="switchAdminTab(event,'collections')"><i class="fa-solid fa-layer-group"></i> Collections</a>
+
+            <div class="nav-category tech-font">SYS.MODULE // OPERATIONS</div>
+            <a onclick="switchAdminTab(event,'orders')"><i class="fa-solid fa-satellite-dish"></i> Orders</a>
+            <a onclick="switchAdminTab(event,'users')"><i class="fa-solid fa-users-gear"></i> Operators</a>
+
+            <div class="nav-category tech-font">SYS.MODULE // CONTENT</div>
+            <a onclick="switchAdminTab(event,'faq')"><i class="fa-solid fa-circle-question"></i> FAQ</a>
+            <a onclick="switchAdminTab(event,'blog')"><i class="fa-solid fa-terminal"></i> Blog</a>
+            <a onclick="switchAdminTab(event,'support')"><i class="fa-solid fa-wrench"></i> Support</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-admin-info admin-card" style="padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px;">
+                <div class="admin-avatar" id="admin-avatar" style="background: rgba(255,255,255,0.1); border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">A</div>
+                <div class="admin-info-text">
+                    <strong id="admin-name" style="display: block; font-size: 0.9rem;">ADMIN</strong>
+                    <small class="tech-font" style="font-size: 0.6rem; color: var(--accent-text);">ROOT ACCESS</small>
+                </div>
+            </div>
+            <a href="shop.html?from=admin" class="btn-outline btn-full btn-sm" style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom: 8px; text-decoration:none;">
+    <i class="fa-solid fa-store"></i> VIEW STOREFRONT
+</a>
+            <button onclick="logout()" class="btn-danger btn-full" style="display:flex; justify-content:center; align-items:center; gap:8px;">
+                <i class="fa-solid fa-power-off"></i> SEVER UPLINK
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <section id="view-products">
+            <p class="label tech-font">DIR_PATH: /INVENTORY_CONTROL/</p>
+            <h2 class="page-title">MANAGE <span class="accent-text">PRODUCTS</span></h2>
+
+            <div id="admin-stats" class="stats-grid"></div>
+
+            <div class="admin-card" style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px;" id="product-form-title">
+                    <i class="fa-solid fa-plus"></i> ADD NEW PRODUCT
+                </h3>
+                <form id="admin-product-form" class="admin-form-grid"
+                      onsubmit="event.preventDefault(); saveProduct();" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+                    <input id="p-id" type="hidden">
+                    
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="p-name" class="tech-font">IDENTIFIER</label>
+                        <input id="p-name" type="text" placeholder="Product Name" required>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="p-price" class="tech-font">VALUE (₱)</label>
+                        <input id="p-price" type="number" step="1" min="0" placeholder="0" required>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="p-stock" class="tech-font">UNITS</label>
+                        <input id="p-stock" type="number" min="0" placeholder="Stock Level" required>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="p-img" class="tech-font">ASSET URL</label>
+                        <input id="p-img" type="url" placeholder="https://...">
+                    </div>
+
+                    <div style="display:flex; gap:8px; align-items:center; height: 100%; padding-bottom: 2px;">
+                        <button type="submit" class="btn-primary" id="form-submit-btn" style="flex: 1;"><i class="fa-solid fa-upload"></i> INITIATE</button>
+                        <button type="button" class="btn-outline btn-sm" onclick="cancelEdit()" title="Cancel edit" style="padding: 12px 16px;">✕</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-container admin-card" style="padding: 0; overflow: hidden;">
+                <table class="admin-table" style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: rgba(0,0,0,0.4);">
+                        <tr>
+                            <th style="padding: 16px;">Image</th>
+                            <th style="padding: 16px;">Product Name</th>
+                            <th style="padding: 16px;">Price</th>
+                            <th style="padding: 16px;">Stock</th>
+                            <th style="padding: 16px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="view-collections" class="hidden">
+            <p class="label tech-font">DIR_PATH: /PRODUCT_GROUPS/</p>
+            <h2 class="page-title">MANAGE <span class="accent-text">COLLECTIONS</span></h2>
+            
+            <div class="admin-card" style="margin-bottom: 2rem;">
+                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1.2rem;"><i class="fa-solid fa-circle-info"></i> Assign items or descriptions to special collection grids displayed on the frontend.</p>
+                <div style="display:grid; grid-template-columns: 2fr 1fr auto; gap:16px; align-items:end;">
+                    <input id="col-name" type="text" placeholder="Item / Bundle Name">
+                    <select id="col-type">
+                        <option value="offers">📦 Bundle Offer</option>
+                        <option value="new-arrivals">✨ New Arrival</option>
+                        <option value="best-sellers">🔥 Best Seller</option>
+                    </select>
+                    <button onclick="addToCollection()" class="btn-primary"><i class="fa-solid fa-link"></i> ASSIGN</button>
+                </div>
+            </div>
+            <div id="collections-display"></div>
+        </section>
+
+        <section id="view-orders" class="hidden">
+            <p class="label tech-font">DIR_PATH: /DEPLOYMENT_LOGS/</p>
+            <h2 class="page-title">ALL <span class="accent-text">ORDERS</span></h2>
+            <div id="orders-list" class="orders-grid"></div>
+        </section>
+
+        <section id="view-faq" class="hidden">
+            <p class="label tech-font">DIR_PATH: /OPERATOR_INTEL/</p>
+            <h2 class="page-title">FAQ <span class="accent-text">MANAGEMENT</span></h2>
+            
+            <div class="admin-card" style="margin-bottom: 2rem;">
+                <div style="display:grid; grid-template-columns: 1fr 2fr auto; gap:16px; align-items:end;">
+                    <input id="faq-question" type="text" placeholder="Incoming Query...">
+                    <input id="faq-answer" type="text" placeholder="Official Response...">
+                    <button onclick="saveFAQ()" class="btn-primary"><i class="fa-solid fa-database"></i> LOG ENTRY</button>
+                </div>
+            </div>
+            
+            <div class="table-container admin-card" style="padding: 0; overflow: hidden;">
+                <table class="admin-table" style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: rgba(0,0,0,0.4);">
+                        <tr>
+                            <th style="padding: 16px;">Query</th>
+                            <th style="padding: 16px;">Data Block (Answer)</th>
+                            <th style="padding: 16px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="faq-table-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="view-blog" class="hidden">
+            <p class="label tech-font">DIR_PATH: /TRANSMISSIONS/</p>
+            <h2 class="page-title">BLOG <span class="accent-text">POSTS</span></h2>
+            
+            <div class="admin-card" style="margin-bottom: 2rem;">
+                <div style="display:grid; gap:16px;">
+                    <input id="blog-title" type="text" placeholder="Transmission Header" style="font-size: 1.2rem; padding: 16px;">
+                    <textarea id="blog-content" placeholder="Enter transmission data..." rows="6" style="resize: vertical; font-family: inherit;"></textarea>
+                    <button onclick="saveBlogPost()" class="btn-primary" style="width:fit-content; padding: 12px 24px;"><i class="fa-solid fa-tower-broadcast"></i> BROADCAST POST</button>
+                </div>
+            </div>
+            <div id="blog-admin-list" class="orders-grid"></div>
+        </section>
+
+        <section id="view-support" class="hidden">
+            <p class="label tech-font">DIR_PATH: /DIAGNOSTICS/</p>
+            <h2 class="page-title">SUPPORT <span class="accent-text">CENTER</span></h2>
+            
+            <div class="admin-card">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem; background: rgba(0, 255, 136, 0.1); padding: 16px; border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
+                    <div class="status-dot"></div>
+                    <strong style="color: #00ff88; font-family: 'Share Tech Mono', monospace; letter-spacing: 1px;">ALL SYSTEMS NOMINAL</strong>
+                </div>
+                <p class="text-muted" style="font-size:0.85rem;"><i class="fa-solid fa-check-double"></i> No pending support tickets detected in the mainframe.</p>
+                <hr style="border:0; border-top:1px solid var(--glass-border); margin:2rem 0;">
+                <div id="support-tickets">
+                    <p class="text-muted tech-font" style="font-size:0.85rem; opacity: 0.5;">> AWAITING INCOMING TRANSMISSIONS...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-users" class="hidden">
+            <p class="label tech-font">DIR_PATH: /ACCESS_CONTROL/</p>
+            <h2 class="page-title">ACTIVE <span class="accent-text">OPERATORS</span></h2>
+            
+            <div class="table-container admin-card" style="padding: 0; overflow: hidden;">
+                <table class="admin-table" style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: rgba(0,0,0,0.4);">
+                        <tr>
+                            <th style="padding: 16px;">Operator ID</th>
+                            <th style="padding: 16px;">Clearance Level</th>
+                            <th style="padding: 16px;">Override Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="system.js"></script>
+<script>
+    // Set admin name
+    const _u = JSON.parse(localStorage.getItem('eagle_active_user') || '{}');
+    if (_u?.username) {
+        document.getElementById('admin-name').innerText = _u.username.toUpperCase();
+        document.getElementById('admin-avatar').innerText = _u.username.charAt(0).toUpperCase();
+    }
+
+    window.onload = () => {
+    renderAdmin();
+    renderFAQAdmin();
+    renderBlogAdmin();
+    renderSupportTickets();
+};
+</script>
+
+</body>
+</html>
